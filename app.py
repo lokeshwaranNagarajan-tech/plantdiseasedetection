@@ -1,27 +1,18 @@
 import streamlit as st
 import numpy as np
 from PIL import Image
-import subprocess
-import sys
+import tensorflow as tf
 
-# 1. Automatic Library Installer (TFLite Runtime)
-def install(package):
-    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-
-try:
-    import tflite_runtime.interpreter as tflite
-except ImportError:
-    install('tflite-runtime')
-    import tflite_runtime.interpreter as tflite
-
-# 2. Page Configuration
+# 1. Page Setup
 st.set_page_config(page_title="Plant Doctor AI", layout="centered")
 st.title("🌿 Plant Disease Detector")
+st.write("Upload a leaf photo to detect diseases.")
 
-# 3. Load TFLite Model
+# 2. Load TFLite Model
 @st.cache_resource
 def load_model():
-    interpreter = tflite.Interpreter(model_path="model.tflite")
+    # model.tflite file GitHub-la kandippa irukkanum
+    interpreter = tf.lite.Interpreter(model_path="model.tflite")
     interpreter.allocate_tensors()
     return interpreter
 
@@ -30,6 +21,7 @@ try:
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
 
+    # 3. Class names
     class_names = [
         'Pepper Bacterial spot', 'Pepper healthy', 'Potato Early blight', 
         'Potato healthy', 'Potato Late blight', 'Tomato Target Spot', 
@@ -38,15 +30,18 @@ try:
         'Tomato Leaf Mold', 'Tomato Septoria spot', 'Tomato Spider mites'
     ]
 
+    # 4. Image Upload UI
     file = st.file_uploader("Upload Leaf Image", type=["jpg", "png", "jpeg"])
 
     if file:
         image = Image.open(file).convert('RGB').resize((224, 224))
         st.image(image, caption="Uploaded Image", use_container_width=True)
         
+        # Preprocessing
         img_array = np.array(image, dtype=np.float32) / 255.0
         img_array = np.expand_dims(img_array, axis=0)
         
+        # Prediction
         interpreter.set_tensor(input_details[0]['index'], img_array)
         interpreter.invoke()
         output = interpreter.get_tensor(output_details[0]['index'])
