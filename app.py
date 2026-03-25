@@ -1,1 +1,55 @@
-{"nbformat":4,"nbformat_minor":0,"metadata":{"colab":{"provenance":[],"authorship_tag":"ABX9TyONuhKWV9Fi3b2GBMJsbhME"},"kernelspec":{"name":"python3","display_name":"Python 3"},"language_info":{"name":"python"}},"cells":[{"cell_type":"code","execution_count":8,"metadata":{"colab":{"base_uri":"https://localhost:8080/"},"id":"rXWxWTILi9tF","executionInfo":{"status":"ok","timestamp":1774458771870,"user_tz":-330,"elapsed":2139,"user":{"displayName":"lokeshwaran Nagarajan","userId":"13693366974099202118"}},"outputId":"cb1ae4ed-e98c-4456-fdb3-a5d5bc049dff"},"outputs":[{"output_type":"stream","name":"stdout","text":["Drive already mounted at /content/drive; to attempt to forcibly remount, call drive.mount(\"/content/drive\", force_remount=True).\n"]}],"source":["from google.colab import drive\n","drive.mount('/content/drive')"]},{"cell_type":"code","source":["import streamlit as st\n","import numpy as np\n","from PIL import Image\n","import tensorflow as tflite_runtime  # <--- Intha line irukkanum, 'tflite_runtime' venaam"],"metadata":{"id":"863tVW9n_Rwz","executionInfo":{"status":"ok","timestamp":1774458904359,"user_tz":-330,"elapsed":5,"user":{"displayName":"lokeshwaran Nagarajan","userId":"13693366974099202118"}}},"execution_count":13,"outputs":[]},{"cell_type":"code","source":["import streamlit as st\n","import numpy as np\n","from PIL import Image\n","import tensorflow as tf\n","\n","st.set_page_config(page_title=\"Plant Doctor AI\", layout=\"centered\")\n","st.title(\"🌿 Plant Disease Detector\")\n","\n","# Model-ai load panna\n","@st.cache_resource\n","def load_model():\n","    # model.tflite file GitHub-la kandippa irukkanum\n","    interpreter = tf.lite.Interpreter(model_path=\"model.tflite\")\n","    interpreter.allocate_tensors()\n","    return interpreter\n","\n","try:\n","    interpreter = load_model()\n","    input_details = interpreter.get_input_details()\n","    output_details = interpreter.get_output_details()\n","\n","    # Class names (Unga 15 classes)\n","    class_names = [\n","        'Pepper Bacterial spot', 'Pepper healthy', 'Potato Early blight',\n","        'Potato healthy', 'Potato Late blight', 'Tomato Target Spot',\n","        'Tomato Mosaic virus', 'Tomato YellowLeaf Curl', 'Tomato Bacterial spot',\n","        'Tomato Early blight', 'Tomato healthy', 'Tomato Late blight',\n","        'Tomato Leaf Mold', 'Tomato Septoria spot', 'Tomato Spider mites'\n","    ]\n","\n","    file = st.file_uploader(\"Upload Leaf Image\", type=[\"jpg\", \"png\", \"jpeg\"])\n","\n","    if file:\n","        image = Image.open(file).convert('RGB').resize((224, 224))\n","        st.image(image, caption=\"Uploaded Image\", use_container_width=True)\n","\n","        # Preprocessing\n","        img_array = np.array(image, dtype=np.float32) / 255.0\n","        img_array = np.expand_dims(img_array, axis=0)\n","\n","        # Predict\n","        interpreter.set_tensor(input_details[0]['index'], img_array)\n","        interpreter.invoke()\n","        output = interpreter.get_tensor(output_details[0]['index'])\n","\n","        result_index = np.argmax(output)\n","        st.success(f\"Detected: **{class_names[result_index]}**\")\n","        st.info(f\"Confidence: {np.max(output)*100:.2f}%\")\n","\n","except Exception as e:\n","    st.error(f\"Something went wrong: {e}\")"],"metadata":{"colab":{"base_uri":"https://localhost:8080/"},"id":"WWZPfnCe_-0I","executionInfo":{"status":"ok","timestamp":1774460180352,"user_tz":-330,"elapsed":20,"user":{"displayName":"lokeshwaran Nagarajan","userId":"13693366974099202118"}},"outputId":"ee1fcd6e-8fc8-4ca7-9ba9-aebae9494906"},"execution_count":25,"outputs":[{"output_type":"stream","name":"stderr","text":["2026-03-25 17:36:18.779 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n","2026-03-25 17:36:18.782 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n","2026-03-25 17:36:18.785 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n","2026-03-25 17:36:18.786 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n","2026-03-25 17:36:18.789 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n","2026-03-25 17:36:18.791 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n","2026-03-25 17:36:18.792 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n","2026-03-25 17:36:18.793 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n"]}]},{"cell_type":"code","source":["# IP address password-kaga\n","!curl ipv4.icanhazip.com\n","\n","# Streamlit-ah intha 'app.py' vechi run panna\n","!streamlit run app.py & npx localtunnel --port 8501"],"metadata":{"colab":{"base_uri":"https://localhost:8080/"},"id":"GalFmVYokNVT","outputId":"c002a3b3-fb1f-4dea-e8b9-26ce0c3c27ca"},"execution_count":null,"outputs":[{"output_type":"stream","name":"stdout","text":["35.196.208.134\n","\u001b[1G\u001b[0K⠙\u001b[1G\u001b[0K⠹\n","Collecting usage statistics. To deactivate, set browser.gatherUsageStats to false.\n","\u001b[0m\n","\u001b[1G\u001b[0K⠸\u001b[1G\u001b[0K⠼\u001b[1G\u001b[0K⠴\u001b[1G\u001b[0K⠦\u001b[1G\u001b[0K⠧\u001b[1G\u001b[0K⠇\u001b[1G\u001b[0K⠏\u001b[1G\u001b[0K⠋\u001b[1G\u001b[0K⠙\u001b[1G\u001b[0K⠹\u001b[1G\u001b[0K⠸\u001b[1G\u001b[0K⠼\u001b[1G\u001b[0K⠴\u001b[1G\u001b[0Kyour url is: https://thirty-bobcats-warn.loca.lt\n","\u001b[0m\n","\u001b[34m\u001b[1m  You can now view your Streamlit app in your browser.\u001b[0m\n","\u001b[0m\n","\u001b[34m  Local URL: \u001b[0m\u001b[1mhttp://localhost:8501\u001b[0m\n","\u001b[34m  Network URL: \u001b[0m\u001b[1mhttp://172.28.0.12:8501\u001b[0m\n","\u001b[34m  External URL: \u001b[0m\u001b[1mhttp://35.196.208.134:8501\u001b[0m\n","\u001b[0m\n"]}]}]}
+import streamlit as st
+import numpy as np
+from PIL import Image
+import tensorflow as tf
+
+# 1. Page Configuration
+st.set_page_config(page_title="Plant Doctor AI", layout="centered")
+st.title("🌿 Plant Disease Detector")
+st.write("Upload a leaf photo to detect diseases.")
+
+# 2. Model-ai load panna
+@st.cache_resource
+def load_model():
+    # model.tflite file GitHub-la kandippa irukkanum
+    interpreter = tf.lite.Interpreter(model_path="model.tflite")
+    interpreter.allocate_tensors()
+    return interpreter
+
+try:
+    interpreter = load_model()
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+
+    # 3. Class names
+    class_names = [
+        'Pepper Bacterial spot', 'Pepper healthy', 'Potato Early blight', 
+        'Potato healthy', 'Potato Late blight', 'Tomato Target Spot', 
+        'Tomato Mosaic virus', 'Tomato YellowLeaf Curl', 'Tomato Bacterial spot', 
+        'Tomato Early blight', 'Tomato healthy', 'Tomato Late blight', 
+        'Tomato Leaf Mold', 'Tomato Septoria spot', 'Tomato Spider mites'
+    ]
+
+    # 4. Image Upload
+    file = st.file_uploader("Upload Leaf Image", type=["jpg", "png", "jpeg"])
+
+    if file:
+        image = Image.open(file).convert('RGB').resize((224, 224))
+        st.image(image, caption="Uploaded Image", use_container_width=True)
+        
+        # 5. Preprocessing
+        img_array = np.array(image, dtype=np.float32) / 255.0
+        img_array = np.expand_dims(img_array, axis=0)
+        
+        # 6. Predict
+        interpreter.set_tensor(input_details[0]['index'], img_array)
+        interpreter.invoke()
+        output = interpreter.get_tensor(output_details[0]['index'])
+        
+        # 7. Result
+        result_index = np.argmax(output)
+        st.success(f"Detected: **{class_names[result_index]}**")
+        st.info(f"Confidence: {np.max(output)*100:.2f}%")
+
+except Exception as e:
+    st.error(f"Error: {e}")
