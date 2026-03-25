@@ -1,17 +1,30 @@
 import streamlit as st
 import numpy as np
 from PIL import Image
-from ai_edge_litert.interpreter import Interpreter
+import os
+import subprocess
+import sys
 
-# 1. Page Configuration
+# 1. Background-la TFLite Runtime install panna
+def install_tflite():
+    try:
+        import tflite_runtime.interpreter as tflite
+    except ImportError:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "tflite-runtime"])
+        import tflite_runtime.interpreter as tflite
+    return tflite
+
+tflite = install_tflite()
+
+# 2. Page Configuration
 st.set_page_config(page_title="Plant Doctor AI", layout="centered")
 st.title("🌿 Plant Disease Detector")
 
-# 2. Load LiteRT Model
+# 3. Load TFLite Model
 @st.cache_resource
 def load_model():
     # model.tflite file GitHub-la kandippa irukkanum
-    interpreter = Interpreter(model_path="model.tflite")
+    interpreter = tflite.Interpreter(model_path="model.tflite")
     interpreter.allocate_tensors()
     return interpreter
 
@@ -38,7 +51,7 @@ try:
         img_array = np.array(image, dtype=np.float32) / 255.0
         img_array = np.expand_dims(img_array, axis=0)
         
-        # Prediction
+        # Predict
         interpreter.set_tensor(input_details[0]['index'], img_array)
         interpreter.invoke()
         output = interpreter.get_tensor(output_details[0]['index'])
